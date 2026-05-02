@@ -1,7 +1,7 @@
 // Copyright (c) Team CharLS.
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "version.h"
+#include "charls/version.h"
 
 #include "util.h"
 

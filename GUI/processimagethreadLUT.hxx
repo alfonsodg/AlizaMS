@@ -109,6 +109,8 @@ public:
 		double wmin, wmax, div_;
 		double window_center_minus_0_point_5{}; // used only for LINEAR
 		const double window_width_minus_one = window_width - 1.0;
+		// Minimum window width to prevent division by zero (DICOM PS3.3 C.11.2.1.2)
+		static constexpr double kMinWindowWidth = 1.0e-5;
 		if (lut_function == 1)
 		{
 			// DICOM LINEAR works with window_width >= 1,
@@ -126,7 +128,7 @@ public:
 			{
 				wmin = window_center - window_width * 0.5;
 				wmax = window_center + window_width * 0.5;
-				div_ = (window_width > 0.0) ? window_width : 0.00001;
+				div_ = (window_width > 0.0) ? window_width : kMinWindowWidth;
 				tmp_lut_function = 0;
 #if 0
 				std::cout << "Warning: forced LUT function to LINEAR_EXACT" << std::endl;
@@ -137,7 +139,7 @@ public:
 		{
 			wmin = window_center - window_width * 0.5;
 			wmax = window_center + window_width * 0.5;
-			div_ = (window_width > 0.0) ? window_width : 0.00001;
+			div_ = (window_width > 0.0) ? window_width : kMinWindowWidth;
 			tmp_lut_function = lut_function;
 		}
 		//

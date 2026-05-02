@@ -13,8 +13,6 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-// modified github.com/issakomi
-
 #if defined(_WIN32) || defined(__i386__)
 #define BT_USE_SSE_IN_API
 #endif
@@ -80,7 +78,7 @@ btVector3 btMultiSphereShape::localGetSupportingVertexWithoutMargin(const btVect
 			rad++;
 		}
 		long i = vec.maxDot(temp, inner_count, newDot);
-		if (newDot > maxDot && i >= 0)
+		if (newDot > maxDot)
 		{
 			maxDot = newDot;
 			supVec = temp[i];
@@ -116,7 +114,7 @@ void btMultiSphereShape::batchedUnitVectorGetSupportingVertexWithoutMargin(const
 				rad++;
 			}
 			long i = vec.maxDot(temp, inner_count, newDot);
-			if (newDot > maxDot && i >= 0)
+			if (newDot > maxDot)
 			{
 				maxDot = newDot;
 				supportVerticesOut[j] = temp[i];

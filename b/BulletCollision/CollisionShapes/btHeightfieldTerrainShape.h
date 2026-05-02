@@ -13,8 +13,6 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-// modified github.com/issakomi
-
 #ifndef BT_HEIGHTFIELD_TERRAIN_SHAPE_H
 #define BT_HEIGHTFIELD_TERRAIN_SHAPE_H
 
@@ -76,7 +74,7 @@ public:
 	struct Range
 	{
 		Range() {}
-		Range(btScalar min_, btScalar max_) : min(min_), max(max_) {}
+		Range(btScalar min, btScalar max) : min(min), max(max) {}
 
 		bool overlaps(const Range& other) const
 		{

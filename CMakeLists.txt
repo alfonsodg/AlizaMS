@@ -174,6 +174,19 @@ else()
   add_definitions(-DNDEBUG)
 endif()
 
+# Security hardening flags
+if(NOT ${tmp1_build_type} STREQUAL "DEBUG")
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(-fstack-protector-strong)
+    if(NOT APPLE)
+      add_link_options(-Wl,-z,relro -Wl,-z,now)
+    endif()
+  endif()
+  if(MSVC)
+    add_compile_options(/GS /DYNAMICBASE /NXCOMPAT)
+  endif()
+endif()
+
 # Required for x86 32 bit GCC build only.
 if(NOT WIN32)
   if(NOT (CMAKE_SIZEOF_VOID_P EQUAL 8))
@@ -1059,3 +1072,10 @@ else()
   install(DIRECTORY "${CMAKE_SOURCE_DIR}/package/archive/usr/share/alizams" DESTINATION "share")
 endif()
 
+
+# Unit tests
+option(BUILD_TESTING "Build unit tests" OFF)
+if(BUILD_TESTING)
+  enable_testing()
+  add_subdirectory(tests)
+endif()

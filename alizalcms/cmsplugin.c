@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------
 //
 //  Little Color Management System
-//  Copyright (c) 1998-2022 Marti Maria Saguer
+//  Copyright (c) 1998-2026 Marti Maria Saguer
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -168,20 +168,21 @@ cmsBool CMSEXPORT  _cmsReadUInt32Number(cmsIOHANDLER* io, cmsUInt32Number* n)
 
 cmsBool CMSEXPORT  _cmsReadFloat32Number(cmsIOHANDLER* io, cmsFloat32Number* n)
 {
-    cmsUInt32Number tmp;
+    union typeConverter {
+        cmsUInt32Number integer;
+        cmsFloat32Number floating_point;
+    } tmp;
 
     _cmsAssert(io != NULL);
 
-    if (io->Read(io, &tmp, sizeof(cmsUInt32Number), 1) != 1)
+    if (io->Read(io, &tmp.integer, sizeof(cmsUInt32Number), 1) != 1)
         return FALSE;
 
     if (n != NULL) {
 
-        cmsFloat32Number f;
-        tmp = _cmsAdjustEndianess32(tmp);
-        memcpy(&f, &tmp, sizeof(cmsFloat32Number));
-        *n = f;
-        
+        tmp.integer = _cmsAdjustEndianess32(tmp.integer);
+        *n = tmp.floating_point;
+
         // Safeguard which covers against absurd values
         if (*n > 1E+20 || *n < -1E+20) return FALSE;
 
@@ -307,14 +308,14 @@ cmsBool CMSEXPORT  _cmsWriteUInt32Number(cmsIOHANDLER* io, cmsUInt32Number n)
 
 cmsBool CMSEXPORT  _cmsWriteFloat32Number(cmsIOHANDLER* io, cmsFloat32Number n)
 {
-    cmsUInt32Number tmp;
-    const cmsFloat32Number f = n;
+    union typeConverter {
+        cmsUInt32Number integer;
+        cmsFloat32Number floating_point;
+    } tmp;
 
-    _cmsAssert(io != NULL);
-
-    memcpy(&tmp, &f, sizeof(cmsUInt32Number));
-    tmp = _cmsAdjustEndianess32(tmp);
-    if (io -> Write(io, sizeof(cmsUInt32Number), &tmp) != 1)
+    tmp.floating_point = n;
+    tmp.integer = _cmsAdjustEndianess32(tmp.integer);
+    if (io -> Write(io, sizeof(cmsUInt32Number), &tmp.integer) != 1)
             return FALSE;
 
     return TRUE;
@@ -363,12 +364,7 @@ cmsBool CMSEXPORT  _cmsWriteXYZNumber(cmsIOHANDLER* io, const cmsCIEXYZ* XYZ)
 // from Fixed point 8.8 to double
 cmsFloat64Number CMSEXPORT _cms8Fixed8toDouble(cmsUInt16Number fixed8)
 {
-       cmsUInt8Number  msb, lsb;
-
-       lsb = (cmsUInt8Number) (fixed8 & 0xff);
-       msb = (cmsUInt8Number) (((cmsUInt16Number) fixed8 >> 8) & 0xff);
-
-       return (cmsFloat64Number) ((cmsFloat64Number) msb + ((cmsFloat64Number) lsb / 256.0));
+    return fixed8 / 256.0;
 }
 
 cmsUInt16Number CMSEXPORT _cmsDoubleTo8Fixed8(cmsFloat64Number val)
@@ -380,19 +376,7 @@ cmsUInt16Number CMSEXPORT _cmsDoubleTo8Fixed8(cmsFloat64Number val)
 // from Fixed point 15.16 to double
 cmsFloat64Number CMSEXPORT _cms15Fixed16toDouble(cmsS15Fixed16Number fix32)
 {
-    cmsFloat64Number floater, sign, mid;
-    int Whole, FracPart;
-
-    sign  = (fix32 < 0 ? -1 : 1);
-    fix32 = abs(fix32);
-
-    Whole     = (cmsUInt16Number)(fix32 >> 16) & 0xffff;
-    FracPart  = (cmsUInt16Number)(fix32 & 0xffff);
-
-    mid     = (cmsFloat64Number) FracPart / 65536.0;
-    floater = (cmsFloat64Number) Whole + mid;
-
-    return sign * floater;
+    return fix32 / 65536.0;
 }
 
 // from double to Fixed point 15.16
@@ -509,7 +493,7 @@ cmsBool CMSEXPORT _cmsIOPrintf(cmsIOHANDLER* io, const char* frm, ...)
     va_start(args, frm);
 
     len = vsnprintf((char*) Buffer, 2047, frm, args);
-    if (len < 0) {
+    if (len < 0 || len >= 2047) {
         va_end(args);
         return FALSE;   // Truncated, which is a fatal error for us
     }
@@ -624,6 +608,10 @@ cmsBool CMSEXPORT cmsPluginTHR(cmsContext id, void* Plug_in)
                     if (!_cmsRegisterMutexPlugin(id, Plugin)) return FALSE;
                     break;
 
+                case cmsPluginParalellizationSig:
+                    if (!_cmsRegisterParallelizationPlugin(id, Plugin)) return FALSE;
+                    break;
+
                 default:
                     cmsSignalError(id, cmsERROR_UNKNOWN_EXTENSION, "Unrecognized plugin type '%X'", Plugin -> Type);
                     return FALSE;
@@ -646,24 +634,25 @@ void CMSEXPORT cmsUnregisterPlugins(void)
 // pointers structure. All global vars are referenced here.
 static struct _cmsContext_struct globalContext = {
 
-    NULL,                              // Not in the linked list
-    NULL,                              // No suballocator
-    {
-        NULL,                          //  UserPtr,            
-        &_cmsLogErrorChunk,            //  Logger,
-        &_cmsAlarmCodesChunk,          //  AlarmCodes,
-        &_cmsAdaptationStateChunk,     //  AdaptationState, 
-        &_cmsMemPluginChunk,           //  MemPlugin,
-        &_cmsInterpPluginChunk,        //  InterpPlugin,
-        &_cmsCurvesPluginChunk,        //  CurvesPlugin,
-        &_cmsFormattersPluginChunk,    //  FormattersPlugin,
-        &_cmsTagTypePluginChunk,       //  TagTypePlugin,
-        &_cmsTagPluginChunk,           //  TagPlugin,
-        &_cmsIntentsPluginChunk,       //  IntentPlugin,
-        &_cmsMPETypePluginChunk,       //  MPEPlugin,
-        &_cmsOptimizationPluginChunk,  //  OptimizationPlugin,
-        &_cmsTransformPluginChunk,     //  TransformPlugin,
-        &_cmsMutexPluginChunk          //  MutexPlugin
+    NULL,                                // Not in the linked list
+    NULL,                                // No suballocator
+    {                                    
+        NULL,                            //  UserPtr,            
+        &_cmsLogErrorChunk,              //  Logger,
+        &_cmsAlarmCodesChunk,            //  AlarmCodes,
+        &_cmsAdaptationStateChunk,       //  AdaptationState, 
+        &_cmsMemPluginChunk,             //  MemPlugin,
+        &_cmsInterpPluginChunk,          //  InterpPlugin,
+        &_cmsCurvesPluginChunk,          //  CurvesPlugin,
+        &_cmsFormattersPluginChunk,      //  FormattersPlugin,
+        &_cmsTagTypePluginChunk,         //  TagTypePlugin,
+        &_cmsTagPluginChunk,             //  TagPlugin,
+        &_cmsIntentsPluginChunk,         //  IntentPlugin,
+        &_cmsMPETypePluginChunk,         //  MPEPlugin,
+        &_cmsOptimizationPluginChunk,    //  OptimizationPlugin,
+        &_cmsTransformPluginChunk,       //  TransformPlugin,
+        &_cmsMutexPluginChunk,           //  MutexPlugin,
+        &_cmsParallelizationPluginChunk  //  ParallelizationPlugin
     },
     
     { NULL, NULL, NULL, NULL, NULL, NULL } // The default memory allocator is not used for context 0
@@ -789,7 +778,7 @@ void* _cmsContextGetClientChunk(cmsContext ContextID, _cmsMemoryClient mc)
 // many different plug-ins simultaneously, then there is no way to 
 // identify which plug-in to unregister.
 void CMSEXPORT cmsUnregisterPluginsTHR(cmsContext ContextID)
-{
+{    
     _cmsRegisterMemHandlerPlugin(ContextID, NULL);
     _cmsRegisterInterpPlugin(ContextID, NULL);
     _cmsRegisterTagTypePlugin(ContextID, NULL);
@@ -801,6 +790,8 @@ void CMSEXPORT cmsUnregisterPluginsTHR(cmsContext ContextID)
     _cmsRegisterOptimizationPlugin(ContextID, NULL);
     _cmsRegisterTransformPlugin(ContextID, NULL);    
     _cmsRegisterMutexPlugin(ContextID, NULL);
+    _cmsRegisterParallelizationPlugin(ContextID, NULL);
+
 }
 
 
@@ -884,6 +875,7 @@ cmsContext CMSEXPORT cmsCreateContext(void* Plugin, void* UserData)
     _cmsAllocOptimizationPluginChunk(ctx, NULL);
     _cmsAllocTransformPluginChunk(ctx, NULL);
     _cmsAllocMutexPluginChunk(ctx, NULL);
+    _cmsAllocParallelizationPluginChunk(ctx, NULL);
 
     // Setup the plug-ins
     if (!cmsPluginTHR(ctx, Plugin)) {
@@ -914,7 +906,10 @@ cmsContext CMSEXPORT cmsDupContext(cmsContext ContextID, void* NewUserData)
     if (!InitContextMutex()) return NULL;
 
     // Setup default memory allocators
-    memcpy(&ctx->DefaultMemoryManager, &src->DefaultMemoryManager, sizeof(ctx->DefaultMemoryManager));
+    if (ContextID == NULL)
+        _cmsInstallAllocFunctions(NULL, &ctx->DefaultMemoryManager);
+    else
+        memcpy(&ctx->DefaultMemoryManager, &src->DefaultMemoryManager, sizeof(ctx->DefaultMemoryManager));
 
     // Maintain the linked list
     _cmsEnterCriticalSectionPrimitive(&_cmsContextPoolHeadMutex);
@@ -947,6 +942,7 @@ cmsContext CMSEXPORT cmsDupContext(cmsContext ContextID, void* NewUserData)
     _cmsAllocOptimizationPluginChunk(ctx, src);
     _cmsAllocTransformPluginChunk(ctx, src);
     _cmsAllocMutexPluginChunk(ctx, src);
+    _cmsAllocParallelizationPluginChunk(ctx, src);
 
     // Make sure no one failed
     for (i=Logger; i < MemoryClientMax; i++) {
@@ -966,7 +962,14 @@ cmsContext CMSEXPORT cmsDupContext(cmsContext ContextID, void* NewUserData)
 // The ContextID can no longer be used in any THR operation.  
 void CMSEXPORT cmsDeleteContext(cmsContext ContextID)
 {
-    if (ContextID != NULL) {
+    if (ContextID == NULL) {
+
+        cmsUnregisterPlugins();
+        if (globalContext.MemPool != NULL)
+            _cmsSubAllocDestroy(globalContext.MemPool);
+        globalContext.MemPool = NULL;
+    }
+    else {
 
         struct _cmsContext_struct* ctx = (struct _cmsContext_struct*) ContextID;              
         struct _cmsContext_struct  fakeContext;  

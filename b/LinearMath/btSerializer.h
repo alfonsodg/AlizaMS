@@ -13,8 +13,6 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-// modified github.com/issakomi
-
 #ifndef BT_SERIALIZER_H
 #define BT_SERIALIZER_H
 
@@ -460,8 +458,8 @@ public:
 		memcpy(buffer, "BULLETf", 7);
 #endif  //BT_USE_DOUBLE_PRECISION
 
-		int littleEndian0 = 1;
-		int littleEndian = ((char*)&littleEndian0)[0];
+		int littleEndian = 1;
+		littleEndian = ((char*)&littleEndian)[0];
 
 		if (sizeof(void*) == 8)
 		{
@@ -482,8 +480,8 @@ public:
 		}
 
 		buffer[9] = '3';
-		buffer[10] = '0';
-		buffer[11] = '8';
+		buffer[10] = '2';
+		buffer[11] = '5';
 	}
 
 	virtual void startSerialization()
@@ -501,7 +499,6 @@ public:
 		writeDNA();
 
 		//if we didn't pre-allocate a buffer, we need to create a contiguous buffer now
-		int mysize = 0;
 		if (!m_totalSize)
 		{
 			if (m_buffer)
@@ -513,14 +510,12 @@ public:
 			unsigned char* currentPtr = m_buffer;
 			writeHeader(m_buffer);
 			currentPtr += BT_HEADER_LENGTH;
-			mysize += BT_HEADER_LENGTH;
 			for (int i = 0; i < m_chunkPtrs.size(); i++)
 			{
-				int curLength = sizeof(btChunk) + m_chunkPtrs[i]->m_length;
+				int curLength = (int)sizeof(btChunk) + m_chunkPtrs[i]->m_length;
 				memcpy(currentPtr, m_chunkPtrs[i], curLength);
 				btAlignedFree(m_chunkPtrs[i]);
 				currentPtr += curLength;
-				mysize += curLength;
 			}
 		}
 

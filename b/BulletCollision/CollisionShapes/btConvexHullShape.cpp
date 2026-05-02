@@ -13,8 +13,6 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-// modified github.com/issakomi
-
 #if defined(_WIN32) || defined(__i386__)
 #define BT_USE_SSE_IN_API
 #endif
@@ -67,7 +65,7 @@ btVector3 btConvexHullShape::localGetSupportingVertexWithoutMargin(const btVecto
 	{
 		btVector3 scaled = vec * m_localScaling;
 		int index = (int)scaled.maxDot(&m_unscaledPoints[0], m_unscaledPoints.size(), maxDot);  // FIXME: may violate encapsulation of m_unscaledPoints
-		if (index >= 0) return m_unscaledPoints[index] * m_localScaling;
+		return m_unscaledPoints[index] * m_localScaling;
 	}
 
 	return supVec;
@@ -90,20 +88,11 @@ void btConvexHullShape::batchedUnitVectorGetSupportingVertexWithoutMargin(const 
 		if (0 < m_unscaledPoints.size())
 		{
 			int i = (int)vec.maxDot(&m_unscaledPoints[0], m_unscaledPoints.size(), newDot);
-			if (i >= 0)
-			{
-				supportVerticesOut[j] = getScaledPoint(i);
-				supportVerticesOut[j][3] = newDot;
-			}
-			else
-			{
-				supportVerticesOut[j][3] = -BT_LARGE_FLOAT;
-			}
+			supportVerticesOut[j] = getScaledPoint(i);
+			supportVerticesOut[j][3] = newDot;
 		}
 		else
-		{
 			supportVerticesOut[j][3] = -BT_LARGE_FLOAT;
-		}
 	}
 }
 

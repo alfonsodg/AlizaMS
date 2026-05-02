@@ -1,5 +1,3 @@
-// modified github.com/issakomi
-
 #include "btInternalEdgeUtility.h"
 
 #include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
@@ -364,15 +362,12 @@ void btGenerateInternalEdgeInfo(btBvhTriangleMeshShape* trimeshShape, btTriangle
 			for (int j = 2; j >= 0; j--)
 			{
 				int graphicsindex;
-				switch (indicestype) {
-					case PHY_INTEGER: graphicsindex = gfxbase[j]; break;
-					case PHY_SHORT: graphicsindex = ((unsigned short*)gfxbase)[j]; break;
-					case PHY_UCHAR: graphicsindex = ((unsigned char*)gfxbase)[j]; break;
-					default:
-						graphicsindex = 0;
-						btAssert(0);
-						break;
-				}
+                                switch (indicestype) {
+                                        case PHY_INTEGER: graphicsindex = gfxbase[j]; break;
+                                        case PHY_SHORT: graphicsindex = ((unsigned short*)gfxbase)[j]; break;
+                                        case PHY_UCHAR: graphicsindex = ((unsigned char*)gfxbase)[j]; break;
+                                        default: btAssert(0);
+                                }
 				if (type == PHY_FLOAT)
 				{
 					float* graphicsbase = (float*)(vertexbase + graphicsindex * stride);

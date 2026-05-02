@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "public_types.h"
+#include "charls/public_types.h"
 
 #include "byte_span.h"
 #include "coding_parameters.h"
@@ -96,6 +96,7 @@ private:
     void check_segment_size(size_t expected_size) const;
     void read_next_start_of_scan();
     CHARLS_CHECK_RETURN jpeg_marker_code read_next_marker_code();
+    CHARLS_CHECK_RETURN jpeg_marker_code read_marker_code();
     void validate_marker_code(jpeg_marker_code marker_code) const;
     CHARLS_CHECK_RETURN jpegls_pc_parameters get_validated_preset_coding_parameters() const;
     void read_marker_segment(jpeg_marker_code marker_code, spiff_header* header = nullptr,

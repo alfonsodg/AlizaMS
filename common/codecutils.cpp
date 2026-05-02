@@ -18,11 +18,7 @@
 
 #include <QtGlobal>
 #include <QStringList>
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 #include <QRegularExpression>
-#else
-#include <QRegExp>
-#endif
 #include <QTextCodec>
 #include "codecutils.h"
 #if 0
@@ -74,11 +70,7 @@ QString CodecUtils::toUTF8(const QByteArray* ba, const char* charset, bool * ok)
   for (int x = 0; x < l.size(); ++x)
   {
     const QString tmp1 = l.at(x).trimmed().toUpper();
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     if (tmp1.contains(QRegularExpression(QString("ISO\\s+2022"))))
-#else
-    if (tmp1.contains(QRegExp(QString("ISO\\s+2022"))))
-#endif
     {
       iso2022 = true;
       break;
@@ -267,11 +259,7 @@ QString CodecUtils::toUTF8(const QByteArray* ba, const char* charset, bool * ok)
         else
         {
           // ISO IR 13
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
           const QRegularExpression re(QString("ISO\\s+2022\\s+IR\\s+13"));
-#else
-          const QRegExp re(QString("ISO\\s+2022\\s+IR\\s+13"));
-#endif
           const int i = l.indexOf(re, Qt::CaseInsensitive);
           if (i > -1)
           {
@@ -440,11 +428,7 @@ QString CodecUtils::toUTF8(const QByteArray* ba, const char* charset, bool * ok)
       codec = QTextCodec::codecForName("ISO-8859-2");
     }
     // ISO IR 13
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     else if (s.contains(QRegularExpression(QString("IR 13\\D*"))))
-#else
-    else if (s.contains(QRegExp(QString("IR 13\\D*"))))
-#endif
     {
       codec = QTextCodec::codecForName("Shift_JIS");
     }
@@ -498,11 +482,7 @@ QByteArray CodecUtils::fromUTF8(const QString & i, const char * charset, bool * 
   for (int x = 0; x < l.size(); ++x)
   {
     const QString tmp1 = l.at(x).trimmed().toUpper();
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     if (tmp1.contains(QRegularExpression(QString("ISO\\s+2022"))))
-#else
-    if (tmp1.contains(QRegExp(QString("ISO\\s+2022"))))
-#endif
     {
       iso2022 = true;
       break;
@@ -587,11 +567,7 @@ QByteArray CodecUtils::fromUTF8(const QString & i, const char * charset, bool * 
       codec = QTextCodec::codecForName("ISO-8859-2");
     }
     // ISO IR 13
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     else if (s.contains(QRegularExpression(QString("IR 13\\D*"))))
-#else
-    else if (s.contains(QRegExp(QString("IR 13\\D*"))))
-#endif
     {
       codec = QTextCodec::codecForName("Shift_JIS");
     }

@@ -9,8 +9,6 @@
 //Copyright (c) 2017 Dan Koschier
 //
 
-// modified github.com/issakomi
-
 #include <limits.h>
 #include <string.h>  //memcpy
 
@@ -46,11 +44,11 @@ struct btSdfDataStream
 
 bool btMiniSDF::load(const char* data, int size)
 {
-	//int fileSize = -1;
+	int fileSize = -1;
 
 	btSdfDataStream ds(data, size);
 	{
-		double buf[] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+		double buf[6];
 		ds.read(buf);
 		m_domain.m_min[0] = buf[0];
 		m_domain.m_min[1] = buf[1];
@@ -62,39 +60,39 @@ bool btMiniSDF::load(const char* data, int size)
 		m_domain.m_max[3] = 0;
 	}
 	{
-		unsigned int buf2[] = { 0, 0, 0 };
+		unsigned int buf2[3];
 		ds.read(buf2);
 		m_resolution[0] = buf2[0];
 		m_resolution[1] = buf2[1];
 		m_resolution[2] = buf2[2];
 	}
 	{
-		double buf[] = { 0.0, 0.0, 0.0 };
+		double buf[3];
 		ds.read(buf);
 		m_cell_size[0] = buf[0];
 		m_cell_size[1] = buf[1];
 		m_cell_size[2] = buf[2];
 	}
 	{
-		double buf[] = { 0.0, 0.0, 0.0 };
+		double buf[3];
 		ds.read(buf);
 		m_inv_cell_size[0] = buf[0];
 		m_inv_cell_size[1] = buf[1];
 		m_inv_cell_size[2] = buf[2];
 	}
 	{
-		unsigned long long int cells = 0;
+		unsigned long long int cells;
 		ds.read(cells);
 		m_n_cells = cells;
 	}
 	{
-		unsigned long long int fields = 0;
+		unsigned long long int fields;
 		ds.read(fields);
 		m_n_fields = fields;
 	}
 
-	unsigned long long int nodes0 = 0;
-	unsigned long long int n_nodes0;
+	unsigned long long int nodes0;
+	std::size_t n_nodes0;
 	ds.read(nodes0);
 	n_nodes0 = nodes0;
 	if (n_nodes0 > 1024 * 1024 * 1024)
@@ -102,9 +100,9 @@ bool btMiniSDF::load(const char* data, int size)
 		return m_isValid;
 	}
 	m_nodes.resize(n_nodes0);
-	for (unsigned long long int i = 0; i < n_nodes0; i++)
+	for (unsigned int i = 0; i < n_nodes0; i++)
 	{
-		unsigned long long int n_nodes1 = 0;
+		unsigned long long int n_nodes1;
 		ds.read(n_nodes1);
 		btAlignedObjectArray<double>& nodes = m_nodes[i];
 		nodes.resize(n_nodes1);
@@ -115,16 +113,16 @@ bool btMiniSDF::load(const char* data, int size)
 		}
 	}
 
-	unsigned long long int n_cells0 = 0;
+	unsigned long long int n_cells0;
 	ds.read(n_cells0);
 	m_cells.resize(n_cells0);
-	for (unsigned long long i = 0; i < n_cells0; i++)
+	for (int i = 0; i < n_cells0; i++)
 	{
-		unsigned long long int n_cells1 = 0;
+		unsigned long long int n_cells1;
 		btAlignedObjectArray<btCell32>& cells = m_cells[i];
 		ds.read(n_cells1);
 		cells.resize(n_cells1);
-		for (unsigned long long j = 0; j < n_cells1; j++)
+		for (int j = 0; j < n_cells1; j++)
 		{
 			btCell32& cell = cells[j];
 			ds.read(cell);
@@ -132,16 +130,17 @@ bool btMiniSDF::load(const char* data, int size)
 	}
 
 	{
-		unsigned long long int n_cell_maps0 = 0;
+		unsigned long long int n_cell_maps0;
 		ds.read(n_cell_maps0);
+
 		m_cell_map.resize(n_cell_maps0);
-		for (unsigned long long i = 0; i < n_cell_maps0; i++)
+		for (int i = 0; i < n_cell_maps0; i++)
 		{
-			unsigned long long int n_cell_maps1 = 0;
+			unsigned long long int n_cell_maps1;
 			btAlignedObjectArray<unsigned int>& cell_maps = m_cell_map[i];
 			ds.read(n_cell_maps1);
 			cell_maps.resize(n_cell_maps1);
-			for (unsigned long long j = 0; j < n_cell_maps1; j++)
+			for (int j = 0; j < n_cell_maps1; j++)
 			{
 				unsigned int& cell_map = cell_maps[j];
 				ds.read(cell_map);
@@ -470,7 +469,7 @@ bool btMiniSDF::interpolate(unsigned int field_id, double& dist, btVector3 const
 	btAlignedBox3d sd = subdomain(i);
 	i = i_;
 	btVector3 d = sd.m_max - sd.m_min;  //.diagonal().eval();
-	(void)d; // unused
+
 	btVector3 denom = (sd.max() - sd.min());
 	btVector3 c0 = btVector3(2.0, 2.0, 2.0) / denom;
 	btVector3 c1 = (sd.max() + sd.min()) / denom;

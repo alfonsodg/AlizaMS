@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -12,8 +12,6 @@ subject to the following restrictions:
 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
-
-// modified github.com/issakomi
 
 #include "btCollisionWorld.h"
 #include "btCollisionDispatcher.h"
@@ -200,7 +198,6 @@ void btCollisionWorld::updateAabbs()
 {
 	BT_PROFILE("updateAabbs");
 
-	btTransform predictedTrans;
 	for (int i = 0; i < m_collisionObjects.size(); i++)
 	{
 		btCollisionObject* colObj = m_collisionObjects[i];
@@ -1418,7 +1415,7 @@ void btCollisionWorld::debugDrawObject(const btTransform& worldTransform, const 
 									lastV = curVert;
 								}
 							}
-							if (numVerts > 0) centroid *= btScalar(1.f) / btScalar(numVerts);
+							centroid *= btScalar(1.f) / btScalar(numVerts);
 							if (getDebugDrawer()->getDebugMode() & btIDebugDraw::DBG_DrawNormals)
 							{
 								btVector3 normalColor(1, 1, 0);

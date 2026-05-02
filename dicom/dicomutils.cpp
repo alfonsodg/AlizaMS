@@ -1568,13 +1568,14 @@ void delta_decode_rgb(
 		dx = plane_size;
 		dy = 1;
 	}
+	const unsigned char * const src_end = data_in + data_size;
 	size_t ps = plane_size;
 	// Need to switch from one algorithm to other (RGB <-> GRAY).
 	while (ps)
 	{
-		// Next byte
+		// Bounds check before reading next byte
+		if (src >= src_end) break;
 		unsigned char b = *src++;
-		assert(src < data_in + data_size);
 		// Mode selection
 		switch (b)
 		{
@@ -1582,6 +1583,7 @@ void delta_decode_rgb(
 			// Used to treat a byte 81/82/83 as a normal byte
 			if (graymode)
 			{
+				if (src >= src_end) { ps = 0; break; }
 				pixel.gray += *src++;
 				dest[0*dx] = pixel.gray;
 				dest[1*dx] = pixel.gray;
@@ -1589,6 +1591,7 @@ void delta_decode_rgb(
 			}
 			else
 			{
+				if (src + 2 >= src_end) { ps = 0; break; }
 				pixel.rgb[0] += *src++;
 				pixel.rgb[1] += *src++;
 				pixel.rgb[2] += *src++;
@@ -1601,7 +1604,9 @@ void delta_decode_rgb(
 			break;
 		case REPEATMODE:
 			// Repeat mode (RLE)
+			if (src >= src_end) { ps = 0; break; }
 			b = *src++;
+			if (b > ps) b = static_cast<unsigned char>(ps);
 			ps -= b;
 			if (graymode)
 			{
@@ -1651,6 +1656,7 @@ void delta_decode_rgb(
 			}
 			else
 			{
+				if (src + 1 >= src_end) { ps = 0; break; }
 				pixel.rgb[0] += b;
 				pixel.rgb[1] += *src++;
 				pixel.rgb[2] += *src++;
@@ -1677,6 +1683,7 @@ void delta_decode(
 	{
 		if (static_cast<unsigned char>(inbuffer[i]) == 0xa5)
 		{
+			if (i + 2 >= length) break;
 			int repeat = static_cast<unsigned char>(inbuffer[i + 1]) + 1;
 			const signed char value = static_cast<signed char>(inbuffer[i + 2]);
 			while (repeat > 0)
@@ -1693,10 +1700,12 @@ void delta_decode(
 	}
 	// Delta encoding pass
 	unsigned short delta{};
-	for (size_t i = 0; i < temp.size(); ++i)
+	const size_t temp_size = temp.size();
+	for (size_t i = 0; i < temp_size; ++i)
 	{
 		if (static_cast<unsigned char>(temp[i]) == 0x5a)
 		{
+			if (i + 2 >= temp_size) break;
 			const unsigned char v1 = static_cast<unsigned char>(temp[i + 1]);
 			const unsigned char v2 = static_cast<unsigned char>(temp[i + 2]);
 			const unsigned short value = static_cast<unsigned short>(v2 * 256 + v1);
@@ -8584,6 +8593,7 @@ bool DicomUtils::convert_elscint(const QString f, const QString outf)
 		return false;
 	}
 	const mdcm::ByteValue * bv = compressiontype.GetByteValue();
+	if (!bv || !bv->GetPointer()) return false;
 	std::string comprle = "PMSCT_RLE1";
 	std::string comprgb = "PMSCT_RGB1";
 	bool isrle{};
@@ -8606,6 +8616,7 @@ bool DicomUtils::convert_elscint(const QString f, const QString outf)
 		const mdcm::DataElement & compressionpixeldata = ds.GetDataElement(tprivatepixeldata);
 		if (compressionpixeldata.IsEmpty()) return false;
 		const mdcm::ByteValue * bv2 = compressionpixeldata.GetByteValue();
+		if (!bv2 || !bv2->GetPointer()) return false;
 		mdcm::Tag tpixeldata(0x7fe0, 0x0010);
 		mdcm::DataElement pixeldata;
 		if (isrle)
@@ -8721,6 +8732,7 @@ bool DicomUtils::convert_elscint(const QString f, const QString outf)
 		const mdcm::DataElement & epixeldata = ds.GetDataElement(tpixeldata);
 		if (epixeldata.IsEmpty()) return false;
 		const mdcm::ByteValue * bv2 = epixeldata.GetByteValue();
+		if (!bv2 || !bv2->GetPointer()) return false;
 		mdcm::DataElement pixeldata;
 		if (isrle)
 		{
@@ -9394,7 +9406,7 @@ QString DicomUtils::read_buffer(
 						rescale_type_size = pixelformat.GetBitsAllocated() / 8;
 					}
 					rescaled_buffer_size
-						= dimx * dimy * dimz * rescale_type_size * pixelformat.GetSamplesPerPixel();
+						= static_cast<unsigned long long>(dimx) * dimy * dimz * rescale_type_size * pixelformat.GetSamplesPerPixel();
 					try
 					{
 						rescaled_buffer = new char[rescaled_buffer_size];
@@ -9487,7 +9499,7 @@ QString DicomUtils::read_buffer(
 						}
 #endif
 						mdcm::PixelFormat mod_pixelformat(mdcm::PixelFormat::FLOAT32);
-						rescaled_buffer_size = dimx * dimy * dimz * (mod_pixelformat.GetBitsAllocated() / 8);
+						rescaled_buffer_size = static_cast<unsigned long long>(dimx) * dimy * dimz * (mod_pixelformat.GetBitsAllocated() / 8);
 						try
 						{
 							rescaled_buffer = new char[rescaled_buffer_size];
@@ -9916,7 +9928,7 @@ QString DicomUtils::read_buffer(
 	for (unsigned long long j = 0; j < dimz; ++j)
 	{
 		bool badalloc{};
-		char * p__;
+		char * p__ = nullptr;
 		try
 		{
 			p__ = new char[xy];

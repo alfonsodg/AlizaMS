@@ -17,8 +17,6 @@ subject to the following restrictions:
 ///Separating axis rest based on work from Pierre Terdiman, see
 ///And contact clipping based on work from Simon Hobbs
 
-// modified github.com/issakomi
-
 #include "btPolyhedralContactClipping.h"
 #include "BulletCollision/CollisionShapes/btConvexPolyhedron.h"
 
@@ -535,7 +533,6 @@ void btPolyhedralContactClipping::clipHullAgainstHull(const btVector3& separatin
 		}
 	}
 	worldVertsB1.resize(0);
-	if (closestFaceB >= 0)
 	{
 		const btFace& polyB = hullB.m_faces[closestFaceB];
 		const int numVertices = polyB.m_indices.size();
