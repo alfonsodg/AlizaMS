@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------
 //
 //  Little Color Management System
-//  Copyright (c) 1998-2022 Marti Maria Saguer
+//  Copyright (c) 1998-2026 Marti Maria Saguer
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -48,34 +48,77 @@ int CMSEXPORT cmsstrcasecmp(const char* s1, const char* s2)
     return (toupper(*us1) - toupper(*--us2));
 }
 
-// long int because C99 specifies ftell in such way (7.19.9.2)
-long int CMSEXPORT cmsfilelength(FILE* f)
+#ifdef CMS_LARGE_FILE_SUPPORT
+
+long long int CMSEXPORT cmsfilelength(FILE* f)
 {
-    long int p , n;
+    long long int p, n;
 
-    p = ftell(f); // register current file position
-    if (p == -1L) 
-        return -1L;
+#ifdef CMS_IS_WINDOWS_
+    p = _ftelli64(f);
+    if (p == -1LL)
+        return -1LL;
 
-    if (fseek(f, 0, SEEK_END) != 0) {
-        return -1L;
-    }
+    if (_fseeki64(f, 0, SEEK_END) != 0)
+        return -1LL;
 
-    n = ftell(f);
-    fseek(f, p, SEEK_SET); // file position restored
+    n = _ftelli64(f);
+
+    if (_fseeki64(f, p, SEEK_SET) != 0)
+        return -1LL;
+#else
+    p = (long long int) ftello(f);
+    if (p < 0)
+        return -1LL;
+
+    if (fseeko(f, 0, SEEK_END) != 0)
+        return -1LL;
+
+    n = (long long int) ftello(f);
+
+    if (fseeko(f, (off_t) p, SEEK_SET) != 0)
+        return -1LL;
+#endif
 
     return n;
 }
 
+#else
+
+// long int because C99 specifies ftell in such way (7.19.9.2)
+long int CMSEXPORT cmsfilelength(FILE* f)
+{
+    long int p, n;
+
+    p = ftell(f);
+    if (p == -1L)
+        return -1L;
+
+    if (fseek(f, 0, SEEK_END) != 0)
+        return -1L;
+
+    n = ftell(f);
+
+    if (fseek(f, p, SEEK_SET) != 0)
+        return -1L;
+
+    return n;
+}
+
+#endif
 
 // Memory handling ------------------------------------------------------------------
 //
 // This is the interface to low-level memory management routines. By default a simple
 // wrapping to malloc/free/realloc is provided, although there is a limit on the max
-// amount of memoy that can be reclaimed. This is mostly as a safety feature to prevent 
+// amount of memory that can be reclaimed. This is mostly as a safety feature to prevent 
 // bogus or evil code to allocate huge blocks that otherwise lcms would never need.
 
-#define MAX_MEMORY_FOR_ALLOC  ((cmsUInt32Number)(1024U*1024U*512U))
+#ifdef CMS_LARGE_FILE_SUPPORT
+#   define MAX_MEMORY_FOR_ALLOC  ((cmsUInt32Number)(1024U*1024U*2048U))
+#else
+#   define MAX_MEMORY_FOR_ALLOC  ((cmsUInt32Number)(1024U*1024U*512U))
+#endif
 
 // User may override this behaviour by using a memory plug-in, which basically replaces
 // the default memory management functions. In this case, no check is performed and it
@@ -92,7 +135,8 @@ cmsBool   _cmsRegisterMemHandlerPlugin(cmsContext ContextID, cmsPluginBase* Plug
 static
 void* _cmsMallocDefaultFn(cmsContext ContextID, cmsUInt32Number size)
 {
-    if (size > MAX_MEMORY_FOR_ALLOC) return NULL;  // Never allow over maximum
+    // Never allow 0 or over maximum
+    if (size == 0 || size > MAX_MEMORY_FOR_ALLOC) return NULL;
 
     return (void*) malloc(size);
 
@@ -234,7 +278,7 @@ cmsBool  _cmsRegisterMemHandlerPlugin(cmsContext ContextID, cmsPluginBase *Data)
 
     // NULL forces to reset to defaults. In this special case, the defaults are stored in the context structure. 
     // Remaining plug-ins does NOT have any copy in the context structure, but this is somehow special as the
-    // context internal data should be malloce'd by using those functions. 
+    // context internal data should be malloc'ed by using those functions. 
     if (Data == NULL) {
 
        struct _cmsContext_struct* ctx = ( struct _cmsContext_struct*) ContextID;
@@ -613,7 +657,6 @@ cmsBool  _cmsRegisterMutexPlugin(cmsContext ContextID, cmsPluginBase* Data)
     if (Plugin ->CreateMutexPtr == NULL || Plugin ->DestroyMutexPtr == NULL || 
         Plugin ->LockMutexPtr == NULL || Plugin ->UnlockMutexPtr == NULL) return FALSE;
 
-
     ctx->CreateMutexPtr  = Plugin->CreateMutexPtr;
     ctx->DestroyMutexPtr = Plugin ->DestroyMutexPtr;
     ctx ->LockMutexPtr   = Plugin ->LockMutexPtr;
@@ -661,3 +704,47 @@ void CMSEXPORT _cmsUnlockMutex(cmsContext ContextID, void* mtx)
         ptr ->UnlockMutexPtr(ContextID, mtx);
     }
 }
+
+// The global Context0 storage for parallelization plug-in
+ _cmsParallelizationPluginChunkType _cmsParallelizationPluginChunk = { 0 };
+
+// Allocate parallelization container.
+void _cmsAllocParallelizationPluginChunk(struct _cmsContext_struct* ctx,
+                                         const struct _cmsContext_struct* src)
+{    
+    if (src != NULL) {
+        void* from = src->chunks[ParallelizationPlugin];
+        ctx->chunks[ParallelizationPlugin] = _cmsSubAllocDup(ctx->MemPool, from, sizeof(_cmsParallelizationPluginChunkType));
+    }
+    else {        
+        _cmsParallelizationPluginChunkType ParallelizationPluginChunk = { 0 };
+        ctx->chunks[ParallelizationPlugin] = _cmsSubAllocDup(ctx->MemPool, &ParallelizationPluginChunk, sizeof(_cmsParallelizationPluginChunkType));
+    }         
+}
+
+// Register parallel processing
+cmsBool _cmsRegisterParallelizationPlugin(cmsContext ContextID, cmsPluginBase* Data)
+{
+    cmsPluginParalellization* Plugin = (cmsPluginParalellization*)Data;
+    _cmsParallelizationPluginChunkType* ctx = (_cmsParallelizationPluginChunkType*)_cmsContextGetClientChunk(ContextID, ParallelizationPlugin);
+
+    if (Data == NULL) {
+
+        // No parallelization routines
+        ctx->MaxWorkers = 0;
+        ctx->WorkerFlags = 0;
+        ctx->SchedulerFn = NULL;        
+        return TRUE;
+    }
+
+    // callback is required
+    if (Plugin->SchedulerFn == NULL) return FALSE;
+
+    ctx->MaxWorkers = Plugin->MaxWorkers;
+    ctx->WorkerFlags = Plugin->WorkerFlags;
+    ctx->SchedulerFn = Plugin->SchedulerFn;
+    
+    // All is ok
+    return TRUE;
+}
+

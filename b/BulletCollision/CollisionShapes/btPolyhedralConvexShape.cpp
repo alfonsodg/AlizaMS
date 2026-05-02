@@ -12,9 +12,6 @@ subject to the following restrictions:
 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
-
-// modified github.com/issakomi
-
 #if defined(_WIN32) || defined(__i386__)
 #define BT_USE_SSE_IN_API
 #endif
@@ -134,7 +131,6 @@ bool btPolyhedralConvexShape::initializePolyhedralFeatures(int shiftVerticesByMa
 			prevVertex = v1;
 			int v01 = edge->getSourceVertex();
 			v1 = edge->getTargetVertex();
-			(void)v01; // FIXME
 		}
 
 		btAssert(combinedFace.m_indices.size() > 2);
@@ -416,7 +412,7 @@ btVector3 btPolyhedralConvexShape::localGetSupportingVertexWithoutMargin(const b
 		for (i = 0; i < inner_count; i++)
 			getVertex(i, temp[i]);
 		i = (int)vec.maxDot(temp, inner_count, newDot);
-		if (newDot > maxDot && i >= 0)
+		if (newDot > maxDot)
 		{
 			maxDot = newDot;
 			supVec = temp[i];
@@ -451,7 +447,7 @@ void btPolyhedralConvexShape::batchedUnitVectorGetSupportingVertexWithoutMargin(
 			for (i = 0; i < inner_count; i++)
 				getVertex(i, temp[i]);
 			i = (int)vec.maxDot(temp, inner_count, newDot);
-			if (newDot > supportVerticesOut[j][3] && i >= 0)
+			if (newDot > supportVerticesOut[j][3])
 			{
 				supportVerticesOut[j] = temp[i];
 				supportVerticesOut[j][3] = newDot;

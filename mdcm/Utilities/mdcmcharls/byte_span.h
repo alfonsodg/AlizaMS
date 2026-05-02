@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "annotations.h"
+#include "charls/annotations.h"
 
 #include <cstddef>
 #include <cstdint>

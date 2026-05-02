@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,7 +22,7 @@ subject to the following restrictions:
 ///If the platform doesn't support placement new, you can disable BT_USE_PLACEMENT_NEW
 ///then the btAlignedObjectArray doesn't support objects with virtual methods, and non-trivial constructors/destructors
 ///You can enable BT_USE_MEMCPY, then swapping elements in the array will use memcpy instead of operator=
-///see discussion here: http://continuousphysics.com/Bullet/phpBB2/viewtopic.php?t=1231 and
+///see discussion here: https://bulletphysics.orgphpBB2/viewtopic.php?t=1231 and
 ///http://www.continuousphysics.com/Bullet/phpBB2/viewtopic.php?t=1240
 
 #define BT_USE_PLACEMENT_NEW 1
@@ -71,8 +71,8 @@ protected:
 	}
 	SIMD_FORCE_INLINE void copy(int start, int end, T* dest) const
 	{
-		unsigned int i;
-		for (i = start; i < (unsigned int)end; ++i)
+		int i;
+		for (i = start; i < end; ++i)
 #ifdef BT_USE_PLACEMENT_NEW
 			new (&dest[i]) T(m_data[i]);
 #else
@@ -218,7 +218,7 @@ public:
 				reserve(newsize);
 			}
 #ifdef BT_USE_PLACEMENT_NEW
-			for (unsigned int i = curSize; i < (unsigned int)newsize; i++)
+			for (int i = curSize; i < newsize; i++)
 			{
 				new (&m_data[i]) T(fillData);
 			}
@@ -248,10 +248,10 @@ public:
 		}
 		m_size++;
 #ifdef BT_USE_PLACEMENT_NEW
-		new (&m_data[(unsigned int)sz]) T(fillValue);  //use the in-place new (not really allocating heap memory)
+		new (&m_data[sz]) T(fillValue);  //use the in-place new (not really allocating heap memory)
 #endif
 
-		return m_data[(unsigned int)sz];
+		return m_data[sz];
 	}
 
 	SIMD_FORCE_INLINE void push_back(const T& _Val)
@@ -263,9 +263,9 @@ public:
 		}
 
 #ifdef BT_USE_PLACEMENT_NEW
-		new (&m_data[(unsigned int)m_size]) T(_Val);
+		new (&m_data[m_size]) T(_Val);
 #else
-		m_data[(unsigned int)size()] = _Val;
+		m_data[size()] = _Val;
 #endif  //BT_USE_PLACEMENT_NEW
 
 		m_size++;

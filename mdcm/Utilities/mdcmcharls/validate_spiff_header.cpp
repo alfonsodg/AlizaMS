@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 
-#include "validate_spiff_header.h"
+#include "charls/validate_spiff_header.h"
 #include "util.h"
 
 using namespace charls;

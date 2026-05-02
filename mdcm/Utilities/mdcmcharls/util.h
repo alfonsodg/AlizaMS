@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "annotations.h"
-#include "jpegls_error.h"
+#include "charls/annotations.h"
+#include "charls/jpegls_error.h"
 
 #include "byte_span.h"
 #include "constants.h"

@@ -13,8 +13,6 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-// modified github.com/issakomi
-
 #include "btConvexPointCloudShape.h"
 #include "BulletCollision/CollisionShapes/btCollisionMargin.h"
 
@@ -49,7 +47,7 @@ btVector3 btConvexPointCloudShape::localGetSupportingVertexWithoutMargin(const b
 		// Here we take advantage of dot(a*b, c) = dot( a, b*c) to do less work. Note this transformation is true mathematically, not numerically.
 		//    btVector3 scaled = vec * m_localScaling;
 		int index = (int)vec.maxDot(&m_unscaledPoints[0], m_numPoints, maxDot);  //FIXME: may violate encapsulation of m_unscaledPoints
-		if (index >= 0) return getScaledPoint(index);
+		return getScaledPoint(index);
 	}
 
 	return supVec;
