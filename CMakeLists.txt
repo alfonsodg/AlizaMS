@@ -789,6 +789,8 @@ endif()
 #
 
 set(ALIZAMS_SRCS ${ALIZAMS_SRCS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/auditlog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/annotationdb.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/common/commonutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/common/contourutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/common/colorspace/colorspace.cpp
@@ -837,6 +839,7 @@ set(ALIZAMS_SRCS ${ALIZAMS_SRCS}
   #${CMAKE_CURRENT_SOURCE_DIR}/GUI/tabledialog.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/GUI/matrixbutton.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/GUI/studyframewidget.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/GUI/hangingprotocol.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/GUI/studyviewwidget.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/browser/sqtree.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/browser/browserwidget2.cpp
