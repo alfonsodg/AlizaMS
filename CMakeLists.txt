@@ -149,6 +149,9 @@ endif()
 #
 ####################################################################
 
+# Optional DCMTK for DICOM networking (C-ECHO, C-FIND, C-GET, C-STORE)
+option(ALIZA_USE_DCMTK "Use DCMTK for DICOM networking" OFF)
+
 message(STATUS "System processor: " ${CMAKE_SYSTEM_PROCESSOR})
 message(STATUS "System name: " ${CMAKE_SYSTEM_NAME})
 
@@ -809,6 +812,14 @@ set(ALIZAMS_SRCS ${ALIZAMS_SRCS}
   ${CMAKE_CURRENT_SOURCE_DIR}/dicom/srutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/dicom/dicomnetwork.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/CG/camera.cpp
+
+if(ALIZA_USE_DCMTK)
+  find_package(DCMTK REQUIRED)
+  add_definitions(-DALIZA_USE_DCMTK)
+  include_directories(${DCMTK_INCLUDE_DIRS})
+  set(ALIZAMS_SRCS ${ALIZAMS_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/dicom/dicomdimse.cpp)
+  message(STATUS "DCMTK: ${DCMTK_LIBRARIES}")
+endif()
   ${CMAKE_CURRENT_SOURCE_DIR}/CG/glwidget.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/CG/testgl.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/GUI/mainwindow.cpp
@@ -1025,6 +1036,10 @@ endif()
 
 if(MDCM_USE_SYSTEM_OPENSSL)
   set(ALIZAMS_LINK_LIBRARIES ${ALIZAMS_LINK_LIBRARIES} ${OPENSSL_LIBRARIES})
+endif()
+
+if(ALIZA_USE_DCMTK)
+  set(ALIZAMS_LINK_LIBRARIES ${ALIZAMS_LINK_LIBRARIES} ${DCMTK_LIBRARIES})
 endif()
 
 if(TMP_USE_53_SPATIAL_ENUMS)

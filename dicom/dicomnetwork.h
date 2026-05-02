@@ -14,11 +14,12 @@ struct DicomNode
 	QString hostname;
 	int port{104};
 	bool use_tls{false};
+	QString local_ae_title;  // Our AE Title (default: ALIZAMS)
 	// DICOMweb
-	QString wado_url;    // e.g. https://server/wado-rs
-	QString qido_url;    // e.g. https://server/qido-rs
-	QString stow_url;    // e.g. https://server/stow-rs
-	QString auth_token;  // Bearer token for DICOMweb
+	QString wado_url;
+	QString qido_url;
+	QString stow_url;
+	QString auth_token;
 };
 
 // Query result entry
@@ -77,5 +78,24 @@ public:
 		const DicomNode & node,
 		const QString & file_path) override;
 };
+
+#ifdef ALIZA_USE_DCMTK
+// DIMSE implementation using DCMTK (C-ECHO, C-FIND, C-GET, C-STORE)
+class DIMSEClient : public DicomNetwork
+{
+public:
+	bool echo(const DicomNode & node) override;
+	QList<DicomQueryResult> find_studies(
+		const DicomNode & node,
+		const QMap<QString, QString> & filters) override;
+	bool retrieve_study(
+		const DicomNode & node,
+		const QString & study_uid,
+		const QString & output_dir) override;
+	bool store(
+		const DicomNode & node,
+		const QString & file_path) override;
+};
+#endif
 
 #endif
