@@ -598,6 +598,7 @@ if(USE_QT_V_6)
     OpenGLWidgets
     PrintSupport
     Svg
+    Network
     Core5Compat REQUIRED)
   if(NOT ALIZA_MEDIASTORAGE_MODE)
     find_package(Qt6 COMPONENTS Sql REQUIRED)
@@ -609,6 +610,7 @@ elseif(USE_QT_V_5)
   find_package(Qt5Widgets REQUIRED)
   find_package(Qt5PrintSupport REQUIRED)
   find_package(Qt5Svg REQUIRED)
+  find_package(Qt5Network REQUIRED)
   if(NOT ALIZA_MEDIASTORAGE_MODE)
     find_package(Qt5Sql REQUIRED)
   endif()
@@ -789,10 +791,14 @@ endif()
 #
 
 set(ALIZAMS_SRCS ${ALIZAMS_SRCS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/authmanager.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/auditlog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/annotationdb.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/common/commonutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/common/contourutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/common/colorspace/colorspace.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/common/codecutils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/gsdf.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/dicom/ultrasoundregionutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/dicom/loaddicom_t.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/dicom/loaddicom.cpp
@@ -801,6 +807,7 @@ set(ALIZAMS_SRCS ${ALIZAMS_SRCS}
   ${CMAKE_CURRENT_SOURCE_DIR}/dicom/splituihgridfilter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/dicom/spectroscopyutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/dicom/srutils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/dicom/dicomnetwork.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/CG/camera.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/CG/glwidget.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/CG/testgl.cpp
@@ -836,6 +843,7 @@ set(ALIZAMS_SRCS ${ALIZAMS_SRCS}
   #${CMAKE_CURRENT_SOURCE_DIR}/GUI/tabledialog.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/GUI/matrixbutton.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/GUI/studyframewidget.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/GUI/hangingprotocol.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/GUI/studyviewwidget.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/browser/sqtree.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/browser/browserwidget2.cpp
@@ -976,6 +984,7 @@ if(USE_QT_V_6)
     Qt6::OpenGLWidgets
     Qt6::PrintSupport
     Qt6::Svg
+    Qt6::Network
     Qt6::Core5Compat)
   if(NOT ALIZA_MEDIASTORAGE_MODE)
     set(ALIZAMS_LINK_LIBRARIES ${ALIZAMS_LINK_LIBRARIES} Qt6::Sql)
@@ -989,7 +998,8 @@ elseif(USE_QT_V_5)
     Qt5::Gui
     Qt5::Widgets
     Qt5::PrintSupport
-    Qt5::Svg)
+    Qt5::Svg
+    Qt5::Network)
   if(NOT ALIZA_MEDIASTORAGE_MODE)
     set(ALIZAMS_LINK_LIBRARIES ${ALIZAMS_LINK_LIBRARIES} Qt5::Sql)
   endif()
@@ -1072,6 +1082,17 @@ else()
   install(DIRECTORY "${CMAKE_SOURCE_DIR}/package/archive/usr/share/alizams" DESTINATION "share")
 endif()
 
+
+# Translations
+file(GLOB TS_FILES "${CMAKE_SOURCE_DIR}/translations/*.ts")
+if(TS_FILES)
+  if(USE_QT_V_6)
+    qt6_add_translation(QM_FILES ${TS_FILES})
+  elseif(USE_QT_V_5)
+    qt5_add_translation(QM_FILES ${TS_FILES})
+  endif()
+  add_custom_target(translations ALL DEPENDS ${QM_FILES})
+endif()
 
 # Unit tests
 option(BUILD_TESTING "Build unit tests" OFF)
