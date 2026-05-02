@@ -793,6 +793,7 @@ set(ALIZAMS_SRCS ${ALIZAMS_SRCS}
   ${CMAKE_CURRENT_SOURCE_DIR}/common/contourutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/common/colorspace/colorspace.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/common/codecutils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/gsdf.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/dicom/ultrasoundregionutils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/dicom/loaddicom_t.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/dicom/loaddicom.cpp
