@@ -273,11 +273,7 @@ void BrowserWidget2::process_directory(const QString & p, const mdcm::Dict & dic
 			bool is_softcopy{};
 			const int idx = tableWidget->rowCount();
 			QString idxs;
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 			idxs = QString::asprintf("%010d", idx);
-#else
-			idxs.sprintf("%010d", idx);
-#endif
 			TableWidgetItem * i = new TableWidgetItem(idxs);
 			std::vector<std::string> files__(s0.GetAllFilenamesFromTagToValue(tSeriesInstanceUID, (*vi).c_str()));
 			for (unsigned int z = 0; z < files__.size(); ++z)
@@ -366,11 +362,7 @@ void BrowserWidget2::process_directory(const QString & p, const mdcm::Dict & dic
 		bool is_softcopy{};
 		const int idx = tableWidget->rowCount();
 		QString ids;
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 		ids = QString::asprintf("%010d", idx);
-#else
-		ids.sprintf("%010d", idx);
-#endif
 		TableWidgetItem * i = new TableWidgetItem(ids);
 		i->files.push_back(tmp1);
 		read_tags_(
@@ -1092,11 +1084,7 @@ const QString BrowserWidget2::read_DICOMDIR(const QString & f)
 	{
 		const int idx = tableWidget->rowCount();
 		QString ids;
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 	 	ids = QString::asprintf("%010d", idx);
-#else
-	 	ids.sprintf("%010d", idx);
-#endif
 		TableWidgetItem * i = new TableWidgetItem(ids);
 		for (int z = 0; z < series.at(x).files.size(); ++z)
 		{
@@ -1808,11 +1796,7 @@ void BrowserWidget2::open_CTK_db()
 	{
 		const int idx = tableWidget->rowCount();
 		QString idxs;
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 		idxs = QString::asprintf("%010d", idx);
-#else
-		idxs.sprintf("%010d", idx);
-#endif
 		TableWidgetItem * i = new TableWidgetItem(idxs);
 		for (int z = 0; z < series.at(x).files.size(); ++z)
 		{

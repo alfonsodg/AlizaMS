@@ -2454,11 +2454,7 @@ void StudyGraphicsWidget::update_measurement(
 			if (measure_textx == measure_texty)
 			{
 				const double d = get_distance4(x0_, y0_, x1_, y1_);
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 				tmp0 = QString::asprintf("%.3f", d);
-#else
-				tmp0.sprintf("%.3f", d);
-#endif
 				tmp0.append(QString(" ") + measure_textx);
 			}
 			else
@@ -2468,11 +2464,7 @@ void StudyGraphicsWidget::update_measurement(
 					tmp1x = true;
 					const double d0 = get_distance4(x0_, y0_, x1_, y0_);
 					QString tmp0x;
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 					tmp0x = QString::asprintf("%.3f", d0);
-#else
-					tmp0x.sprintf("%.3f", d0);
-#endif
 					tmp0.append(QString("X: ") + tmp0x + QString(" ") + measure_textx);
 				}
 				if (!measure_textx.isEmpty() && !measure_texty.isEmpty())
@@ -2484,11 +2476,7 @@ void StudyGraphicsWidget::update_measurement(
 					tmp1y = true;
 					const double d1 = get_distance4(x0_, y0_, x0_, y1_);
 					QString tmp0y;
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 					tmp0y = QString::asprintf("%.3f", d1);
-#else
-					tmp0y.sprintf("%.3f", d1);
-#endif
 					tmp0.append(QString("Y: ") + tmp0y + QString(" ") + measure_texty);
 				}
 			}
@@ -2621,11 +2609,7 @@ void StudyGraphicsWidget::update_measurement(
 		}
 		if (d >= 0.0)
 		{
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 			tmp0 = QString::asprintf("%.3f", d);
-#else
-			tmp0.sprintf("%.3f", d);
-#endif
 			tmp0.append(QString(" ") + ivariant->unit_str);
 			QPainterPath path;
 			QPen pen;

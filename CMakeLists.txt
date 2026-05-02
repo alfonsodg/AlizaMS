@@ -1072,3 +1072,10 @@ else()
   install(DIRECTORY "${CMAKE_SOURCE_DIR}/package/archive/usr/share/alizams" DESTINATION "share")
 endif()
 
+
+# Unit tests
+option(BUILD_TESTING "Build unit tests" OFF)
+if(BUILD_TESTING)
+  enable_testing()
+  add_subdirectory(tests)
+endif()

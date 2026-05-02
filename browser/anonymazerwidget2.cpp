@@ -577,11 +577,7 @@ bool find_time_less_1h_recurs__(
 					bv->GetLength()).trimmed().remove(QChar('\0'));
 				if (!s.isEmpty())
 				{
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
   					const QStringList l = s.split(QString("\\"), Qt::KeepEmptyParts);
-#else
-  					const QStringList l = s.split(QString("\\"), QString::KeepEmptyParts);
-#endif
 					const int l_size = l.size();
 					for (int x = 0; x < l_size; ++x)
 					{
@@ -683,11 +679,7 @@ void modify_date_time_recurs__(
 						bv->GetLength()).trimmed().remove(QChar('\0'));
 					if (!s.isEmpty())
 					{
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
   						const QStringList l = s.split(QString("\\"), Qt::KeepEmptyParts);
-#else
-  						const QStringList l = s.split(QString("\\"), QString::KeepEmptyParts);
-#endif
 						const int l_size = l.size();
 						for (int x = 0; x < l_size; ++x)
 						{
@@ -2196,15 +2188,11 @@ void build_maps(
 	}
 // UIDs
 	{
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 		QSet<QString> uset = uids.empty()
 			?
 			QSet<QString>()
 			:
 			QSet<QString>(uids.begin(),uids.end());
-#else
-		QSet<QString> uset = uids.toSet();
-#endif
 		uids.clear();
 		QSetIterator<QString> it0(uset);
 		while (it0.hasNext())
@@ -2219,15 +2207,11 @@ void build_maps(
 	}
 // PNs
 	{
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 		QSet<QString> pset = pids.empty()
 			?
 			QSet<QString>()
 			:
 			QSet<QString>(pids.begin(),pids.end());
-#else
-		QSet<QString> pset = pids.toSet();
-#endif
 		pids.clear();
 		QSetIterator<QString> it1(pset);
 		while (it1.hasNext())
@@ -2242,15 +2226,11 @@ void build_maps(
 	}
 // IDs
 	{
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 		QSet<QString> iset = ids.empty()
 			?
 			QSet<QString>()
 			:
 			QSet<QString>(ids.begin(),ids.end());
-#else
-		QSet<QString> iset = ids.toSet();
-#endif
 		ids.clear();
 		QSetIterator<QString> it2(iset);
 		while (it2.hasNext())
@@ -2265,15 +2245,11 @@ void build_maps(
 	}
 //
 	{
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 		pat_ids_set = pat_ids_l.empty()
 			?
 			QSet<QString>()
 			:
 			QSet<QString>(pat_ids_l.begin(),pat_ids_l.end());
-#else
-		pat_ids_set = pat_ids_l.toSet();
-#endif
 	}
 }
 
@@ -2477,27 +2453,15 @@ void AnonymazerWidget2::process_directory(
 				QString tmp000;
 				if (local_count_files <= 9999)
 				{
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 					tmp000 = QString::asprintf("%04d", local_count_files);
-#else
-					tmp000.sprintf("%04d", local_count_files);
-#endif
 				}
 				else if (local_count_files <= 99999999)
 				{
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 					tmp000 = QString::asprintf("%08d", local_count_files);
-#else
-					tmp000.sprintf("%08d", local_count_files);
-#endif
 				}
 				else
 				{
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 					tmp000 = QString::asprintf("%010d", local_count_files);
-#else
-					tmp000.sprintf("%010d", local_count_files);
-#endif
 				}
 				out_filename = tmp000 + QString(".dcm");
 			}
@@ -2581,19 +2545,11 @@ void AnonymazerWidget2::process_directory(
 				QString tmp000;
 				if (count_dirs <= 99999999)
 				{
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 					tmp000 = QString::asprintf("%08d", count_dirs);
-#else
-					tmp000.sprintf("%08d", count_dirs);
-#endif
 				}
 				else
 				{
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 					tmp000 = QString::asprintf("%010d", count_dirs);
-#else
-					tmp000.sprintf("%010d", count_dirs);
-#endif
 				}
 				d = QDir(outp + QString("/") + tmp000);
 			}

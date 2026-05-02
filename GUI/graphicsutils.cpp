@@ -126,11 +126,7 @@ template<typename T> QString get_scalar_pixel_value__(
 			{
 				const double tmp0 = static_cast<double>(p);
 				*label = static_cast<long long>(p);
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 				s += QString::asprintf("%.6f", tmp0);
-#else
-				s.sprintf("%.6f", tmp0);
-#endif
 				s.append(idx_);
 			}
 			break;
@@ -241,15 +237,9 @@ template<typename T> QString get_rgb_pixel_value__(
 				QString tmp0s;
 				QString tmp1s;
 				QString tmp2s;
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 				tmp0s = QString::asprintf("%.3f", tmp0);
 				tmp1s = QString::asprintf("%.3f", tmp1);
 				tmp2s = QString::asprintf("%.3f", tmp2);
-#else
-				tmp0s.sprintf("%.3f", tmp0);
-				tmp1s.sprintf("%.3f", tmp1);
-				tmp2s.sprintf("%.3f", tmp2);
-#endif
 				s.append(tmp0s + QString(",") + tmp1s + QString(",") + tmp2s);
 				s.append(idx_);
 			}
@@ -366,17 +356,10 @@ template<typename T> QString get_rgba_pixel_value__(
 				QString tmp1s;
 				QString tmp2s;
 				QString tmp3s;
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 				tmp0s = QString::asprintf("%.3f", tmp0);
 				tmp1s = QString::asprintf("%.3f", tmp1);
 				tmp2s = QString::asprintf("%.3f", tmp2);
 				tmp3s = QString::asprintf("%.3f", tmp3);
-#else
-				tmp0s.sprintf("%.3f", tmp0);
-				tmp1s.sprintf("%.3f", tmp1);
-				tmp2s.sprintf("%.3f", tmp2);
-				tmp3s.sprintf("%.3f", tmp3);
-#endif
 				s.append(tmp0s + QString(",") + tmp1s+QString(",") + tmp2s + QString(",") + tmp3s);
 				s.append(idx_);
 			}
@@ -993,6 +976,10 @@ void GraphicsUtils::draw_cross_out(QImage & tmpi)
 	painter->setPen(pen);
 	painter->drawLine(QPointF(0, 0), QPointF(s.width(), s.height()));
 	painter->drawLine(QPointF(0, s.height()), QPointF(s.width(), 0));
+	painter->end();
+	delete painter;
+}
+eight()), QPointF(s.width(), 0));
 	painter->end();
 	delete painter;
 }

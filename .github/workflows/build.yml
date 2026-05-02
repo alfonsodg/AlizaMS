@@ -1,0 +1,71 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-ubuntu-qt6:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake build-essential \
+            qt6-base-dev qt6-svg-dev libqt6openglwidgets6 libqt6sql6 libqt6core5compat6-dev \
+            libgl-dev libglu1-mesa-dev \
+            libinsighttoolkit5-dev
+
+      - name: Configure
+        run: cmake -B build -DALIZA_QT_VERSION=6 -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+
+      - name: Build
+        run: cmake --build build -j$(nproc)
+
+      - name: Test
+        run: cd build && ctest --output-on-failure
+
+  build-ubuntu-qt5:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake build-essential \
+            qtbase5-dev libqt5svg5-dev libqt5sql5 libqt5opengl5-dev \
+            libgl-dev libglu1-mesa-dev \
+            libinsighttoolkit5-dev
+
+      - name: Configure
+        run: cmake -B build -DALIZA_QT_VERSION=5 -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+
+      - name: Build
+        run: cmake --build build -j$(nproc)
+
+      - name: Test
+        run: cd build && ctest --output-on-failure
+
+  unit-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install minimal dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake build-essential
+
+      - name: Configure tests only
+        run: cmake -B build-tests -S tests -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build tests
+        run: cmake --build build-tests -j$(nproc)
+
+      - name: Run tests
+        run: cd build-tests && ctest --output-on-failure

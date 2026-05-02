@@ -160,20 +160,12 @@ QString print_length(size_t l)
 	QString r;
 	if (l > 1024*1024)
 	{
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 		r = QString::asprintf("%.2f", l / (1024.0*1024.0));
-#else
-		r.sprintf("%.2f", l / (1024.0*1024.0));
-#endif
 		r += QString(" MB");
 	}
 	else if (l > 1024)
 	{
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 		r = QString::asprintf("%.2f", l / 1024.0);
-#else
-		r.sprintf("%.2f", l / 1024.0);
-#endif
 		r += QString(" KB");
 	}
 	else
@@ -632,17 +624,9 @@ void SQtree::process_element(
 									memcpy(&group,group_, 2);
 									memcpy(&element,element_, 2);
 									QString tmp3;
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 									tmp3 = QString::asprintf("%04x", group);
-#else
-									tmp3.sprintf("%04x", group);
-#endif
 									QString tmp4;
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 									tmp4 = QString::asprintf("%04x", element);
-#else
-									tmp4.sprintf("%04x", element);
-#endif
 									str_.append(tmp3 + QString(",") + tmp4);
 									if (at_x != length - 4) str_.append(QString(" "));
 								}
@@ -1672,7 +1656,6 @@ void SQtree::expand_item()
 void SQtree::expand_children(const QModelIndex & index)
 {
 	if (!index.isValid()) return;
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 	const QAbstractItemModel * m = index.model();
 	if (m)
 	{
@@ -1685,22 +1668,11 @@ void SQtree::expand_children(const QModelIndex & index)
 	}
 	if (!treeWidget->isExpanded(index))
 		treeWidget->expand(index);
-#else
-	for (int i = 0; i < index.model()->rowCount(index); ++i)
-	{
-		++sqtree_expanded_items;
-		if (sqtree_expanded_items > 65000) break;
-	    expand_children(index.child(i, 0));
-	}
-	if (!treeWidget->isExpanded(index))
-		treeWidget->expand(index);
-#endif
 }
 
 void SQtree::collapse_children(const QModelIndex & index)
 {
 	if (!index.isValid()) return;
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 	if (treeWidget->isExpanded(index))
 		treeWidget->collapse(index);
 	const QAbstractItemModel * m = index.model();
@@ -1711,14 +1683,6 @@ void SQtree::collapse_children(const QModelIndex & index)
 			collapse_children(m->index(i, 0, index));
 		}
 	}
-#else
-	if (treeWidget->isExpanded(index))
-		treeWidget->collapse(index);
-	for (int i = 0; i < index.model()->rowCount(index); ++i)
-	{
-	    collapse_children(index.child(i, 0));
-	}
-#endif
 }
 
 void SQtree::dropEvent(QDropEvent * e)
