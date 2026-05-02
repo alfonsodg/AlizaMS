@@ -34,6 +34,8 @@
 #include <QFont>
 #include <QProcess>
 #include <QObject>
+#include <QTranslator>
+#include <QLocale>
 #include <cstdlib>
 #include <iostream>
 #include "browser/sqtree.h"
@@ -359,6 +361,12 @@ int main(int argc, char * argv[])
 	}
 #endif
 	QApplication app(argc, argv);
+	QTranslator translator;
+	const QString locale = QLocale::system().name();
+	if (translator.load(QString("alizams_") + locale, QApplication::applicationDirPath() + QString("/translations")))
+	{
+		app.installTranslator(&translator);
+	}
 #if 1
 	app.setQuitOnLastWindowClosed(false);
 #endif
@@ -525,7 +533,7 @@ int main(int argc, char * argv[])
 	splash->setWindowFlags(Qt::SplashScreen|Qt::WindowStaysOnTopHint);
 	splash->setAttribute(Qt::WA_DeleteOnClose);
 	splash->show();
-	splash->showMessage(splash_info + QString("  Loading ..."));
+	splash->showMessage(splash_info + QObject::tr("  Loading ..."));
 #endif
 	//
 #ifdef _WIN32
@@ -575,8 +583,8 @@ int main(int argc, char * argv[])
 				{
 					QMessageBox::information(
 						nullptr,
-						QString("Warning"),
-						QString(
+						QObject::tr("Warning"),
+						QObject::tr(
 							"Max 4 Metadata Viewers,\n"
 							"use -s to open and scan series"));
 					break;

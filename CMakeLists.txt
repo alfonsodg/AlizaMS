@@ -1073,6 +1073,17 @@ else()
 endif()
 
 
+# Translations
+file(GLOB TS_FILES "${CMAKE_SOURCE_DIR}/translations/*.ts")
+if(TS_FILES)
+  if(USE_QT_V_6)
+    qt6_add_translation(QM_FILES ${TS_FILES})
+  elseif(USE_QT_V_5)
+    qt5_add_translation(QM_FILES ${TS_FILES})
+  endif()
+  add_custom_target(translations ALL DEPENDS ${QM_FILES})
+endif()
+
 # Unit tests
 option(BUILD_TESTING "Build unit tests" OFF)
 if(BUILD_TESTING)
