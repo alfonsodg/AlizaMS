@@ -170,8 +170,11 @@ ExpandPalette(const EntryType * raw_values, uint32_t length, std::vector<EntryTy
   typedef std::deque<Segment<EntryType> *> SegmentList;
   SegmentList                              segments;
   const EntryType *                        raw_seg = raw_values;
+  const size_t max_segments = length / sizeof(EntryType);
+  size_t segment_count = 0;
   while ((std::distance(raw_values, raw_seg) * sizeof(EntryType)) < length)
   {
+    if (++segment_count > max_segments) break;
     Segment<EntryType> * segment = nullptr;
     if (*raw_seg == 0)
     {
@@ -187,8 +190,14 @@ ExpandPalette(const EntryType * raw_values, uint32_t length, std::vector<EntryTy
     }
     if (segment)
     {
-      segments.push_back(segment);
+      const EntryType * prev_seg = raw_seg;
       raw_seg = segment->Last();
+      if (raw_seg <= prev_seg)
+      {
+        delete segment;
+        break;
+      }
+      segments.push_back(segment);
     }
     else
     {

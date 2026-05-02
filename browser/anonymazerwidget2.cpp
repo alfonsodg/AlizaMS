@@ -2277,7 +2277,6 @@ void build_maps(
 	}
 }
 
-static unsigned int count_files = 0;
 static unsigned int count_dirs = 0;
 
 }
@@ -2458,7 +2457,7 @@ void AnonymazerWidget2::process_directory(
 	QStringList flist = dir.entryList(QDir::Files);
 	//
 	{
-		count_files = 0;
+		unsigned int local_count_files = 0;
 		QStringList filenames;
 		for (int x = 0; x < flist.size(); ++x)
 		{
@@ -2469,35 +2468,35 @@ void AnonymazerWidget2::process_directory(
 		}
 		for (int x = 0; x < filenames.size(); ++x)
 		{
-			++count_files;
+			++local_count_files;
 			QApplication::processEvents();
 			if (pd->wasCanceled()) return;
 			QString out_filename;
 			if (rename_files)
 			{
 				QString tmp000;
-				if (count_files <= 9999)
+				if (local_count_files <= 9999)
 				{
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
-					tmp000 = QString::asprintf("%04d", count_files);
+					tmp000 = QString::asprintf("%04d", local_count_files);
 #else
-					tmp000.sprintf("%04d", count_files);
+					tmp000.sprintf("%04d", local_count_files);
 #endif
 				}
-				else if (count_files <= 99999999)
+				else if (local_count_files <= 99999999)
 				{
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
-					tmp000 = QString::asprintf("%08d", count_files);
+					tmp000 = QString::asprintf("%08d", local_count_files);
 #else
-					tmp000.sprintf("%08d", count_files);
+					tmp000.sprintf("%08d", local_count_files);
 #endif
 				}
 				else
 				{
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
-					tmp000 = QString::asprintf("%010d", count_files);
+					tmp000 = QString::asprintf("%010d", local_count_files);
 #else
-					tmp000.sprintf("%010d", count_files);
+					tmp000.sprintf("%010d", local_count_files);
 #endif
 				}
 				out_filename = tmp000 + QString(".dcm");
@@ -2600,7 +2599,10 @@ void AnonymazerWidget2::process_directory(
 			}
 			else
 			{
-				d = QDir(outp + QString("/") + dlist.at(j));
+				const QString safe_name = QFileInfo(dlist.at(j)).fileName();
+				if (safe_name.isEmpty() || safe_name == QString("..") || safe_name == QString("."))
+					continue;
+				d = QDir(outp + QString("/") + safe_name);
 			}
 			if (!d.exists()) d.mkpath(d.absolutePath());
 #if 0

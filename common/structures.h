@@ -218,6 +218,8 @@ public:
 		delete [] tc;
 		delete [] ipp_iop;
 	}
+	ImageSlice(const ImageSlice &) = delete;
+	ImageSlice & operator=(const ImageSlice &) = delete;
 	float * v;
 	float * fv;
 	float * tc;
@@ -239,6 +241,8 @@ public:
 	{
 		delete [] fv;
 	}
+	SpectroscopySlice(const SpectroscopySlice &) = delete;
+	SpectroscopySlice & operator=(const SpectroscopySlice &) = delete;
 	quint32 fvaoid{};
 	quint32 fvboid{};
 	quint32 lvaoid{};
@@ -262,12 +266,9 @@ public:
 	SliceOverlay(const SliceOverlay & j)
 		:
 		dimx(j.dimx), dimy(j.dimy),
-		x(j.x), y(j.y)
+		x(j.x), y(j.y),
+		data(j.data)
 	{
-		for (size_t k = 0; k < j.data.size(); ++k)
-		{
-			data.push_back(j.data.at(k));
-		}
 	}
 	~SliceOverlay() = default;
 	int dimx;
@@ -277,14 +278,12 @@ public:
 	std::vector<char> data;
 	SliceOverlay & operator=(const SliceOverlay & j)
 	{
+		if (this == &j) return *this;
 		dimx = j.dimx;
 		dimy = j.dimy;
 		x = j.x;
 		y = j.y;
-		for (size_t k = 0; k < j.data.size(); ++k)
-		{
-			data.push_back(j.data.at(k));
-		}
+		data = j.data;
 		return *this;
 	}
 };

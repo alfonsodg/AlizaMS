@@ -9,7 +9,7 @@ const char c3d_vs[] =
 "uniform mat4 mvp;\n"
 "void main()\n"
 "{\n"
-"	texcoord0=v_texcoord0\n;"
+"	texcoord0=v_texcoord0;\n"
 "	gl_Position=mvp*vec4(v_position,1.0);\n"
 "}\n";
 
